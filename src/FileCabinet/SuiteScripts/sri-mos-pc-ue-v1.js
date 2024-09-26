@@ -2,34 +2,50 @@
  * @NApiVersion 2.1
  * @NScriptType UserEventScript
  */
+/*
+Name          : User Event on Project Consultant
+Author        : Mosses
+Description   : Compute cost based on experience
+Dependencies  : None
+Release Date  : 2024-09-23
+Version       : 2.0.0
+Changing      : 2.0.0 - 2nd Updated Version
+Website       : www.cloudio.com
+*/
+
 var query, record;
-var modules = ['N/query', 'N/record'];
+var modules = ["N/query", "N/record"];
+ 
 define(modules, main);
-
-function main(queryModule, recordModule){
-    query = queryModule;
-    record = recordModule;
-    return {
-        beforeLoad : myBeforeLoad,
-        beforeSubmit : myBeforeSubmit,
-        afterSubmit : myAfterSubmit
-    }
+ 
+function main(queryModule, recordModule) {
+  query = queryModule;
+  record = recordModule;
+  return {
+    beforeLoad: myBeforeLoad,
+    beforeSubmit: myBeforeSubmit,
+    afterSubmit: myAfterSubmit,
+  };
 }
-
-function myBeforeLoad(ScriptContext){
-    log.debug({title: beforeLoad,
-        details: "Test of code"
-    })
+ 
+function myBeforeLoad(scriptContext) {
+  log.debug({
+    title: "myBeforeLoad",
+    details: scriptContext,
+  });
 }
-
-function myBeforeSubmit(ScriptContext){
-    log.debug({title: beforeSubmit,
-        details: "ScriptContext"
-    })
+ 
+function myBeforeSubmit(scriptContext) {
+  log.debug({
+    title: "myBeforeSubmit",
+    details: scriptContext,
+  });
 }
-
-function myAfterSubmit(ScriptContext){
-    log.debug({title: afterSubmit,
-        details: ScriptContext
-    })
+ 
+function myAfterSubmit(scriptContext) {
+  log.debug({
+    title: "myAfterSubmit",
+    details: scriptContext,
+  });
 }
+ 
