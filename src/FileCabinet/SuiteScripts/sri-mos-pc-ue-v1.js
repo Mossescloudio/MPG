@@ -31,21 +31,24 @@ function main(queryModule, recordModule) {
 function myBeforeLoad(scriptContext) {
   log.debug({
     title: "myBeforeLoad",
-    details: scriptContext,
+    details: 'This is just my before load',
   });
 }
  
 function myBeforeSubmit(scriptContext) {
-  log.debug({
-    title: "myBeforeSubmit",
-    details: scriptContext,
+  var curRecord = scriptContext.newRecord;
+  var recType = curRecord.type;
+  var recId = curRecord.id;
+  curRecord.setValue({
+    fieldId: 'custrecord_mos_pc_cost_per_hour',
+    value: 25
   });
 }
  
 function myAfterSubmit(scriptContext) {
   log.debug({
     title: "myAfterSubmit",
-    details: scriptContext,
+    details: 'This is just my after submit',
   });
 }
  
