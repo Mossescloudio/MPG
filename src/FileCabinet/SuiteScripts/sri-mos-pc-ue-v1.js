@@ -12,11 +12,16 @@ version     : 1.0.0
 Changelog   : 1.0.0 - Initial release
 website     : www.cloudiotech.com
 */
+const DRAFT = 1;
+const PC_STATUS_PENDING = 2;
+const PC_STATUS_APPROVED = 3;
+const PC_STATUS_REJECTED = 4;
+
 var query, record, pcMod;
 var modules = ['N/query', 'N/record', './sri-mos-pc-mod-v1'];
- 
+
 define(modules, main);
- 
+
 function main(queryModule, recordModule, pcModule) {
     query = queryModule;
     record = recordModule;
@@ -55,20 +60,16 @@ function myBeforeSubmit(scriptContext) {
 function myAfterSubmit(scriptContext) {
     try {
         var curRecord = scriptContext.newRecord;
-        var status = curRecord.getValue('name');
+        var recType = curRecord.type;
+        var recId = curRecord.id;
+        var mode = scriptContext.type;
+        var status = curRecord.getValue('custrecord_mos_pc_status');
+        log.debug({ title: 'status', details: status });
         if (status == PC_STATUS_APPROVED){
-            var ConsultantName = curRecord.getValue('name');
-            var task = record.create({ type: record.type.TASK});
-            var subject = 'followup regarding on boarding of ' + ConsultantName;
-
-            task.setValue({fieldId: 'name', value: subject});
-            task.setValue({fieldId: 'assigned', value: subject});
-            task.setValue({fieldId: 'message', value: 'Please verify!'});
-
-            var taskId = task.save();
+        pcMod.createTask(curRecord);
         }
-    } catch (e) {
-        log.error({title: 'Error', details: e})
+    }
+    catch (error) {
+        log.debug({ title: 'Error', details: error });
     }
 }
- 

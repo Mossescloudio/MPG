@@ -1,14 +1,14 @@
 var cts = {};
- 
+
 var query;
 var modules = ['N/query'];
 define(modules, main);
- 
+
 function main(queryModule) {
     query = queryModule;
     return cts;
 }
- 
+
 cts.updateCostAndMargin = (curRecord) => {
     var retValue = { success: false, message: '', data: {} };
     try {
@@ -22,7 +22,7 @@ cts.updateCostAndMargin = (curRecord) => {
         defaultMargin = defaultMargin ? defaultMargin : 0;
         defaultMargin = parseFloat(defaultMargin);
         log.debug({ title: 'Work Experience|Rate|Default Margin', details: workExperience + '|' + ratePerHour + '|' + defaultMargin });
- 
+
         var result = computeCostAndMargin(workExperience, ratePerHour, defaultMargin);
         if (result.success) {
             curRecord.setValue({
@@ -48,8 +48,8 @@ cts.updateCostAndMargin = (curRecord) => {
     }
     return retValue;
 }
- 
-function computeCostAndMargin(workExperience, ratePerHour, defaultMargin){
+
+function computeCostAndMargin(workExperience, ratePerHour, defaultMargin) {
     var retValue = { success: false, message: '', data: {} };
     try {
         var marginPercentage = 20;
@@ -62,9 +62,9 @@ function computeCostAndMargin(workExperience, ratePerHour, defaultMargin){
         } else {
             marginPercentage = defaultMargin;
         }
- 
+
         log.debug({ title: 'Margin Percentage', details: marginPercentage });
- 
+
         var costPerHour = ratePerHour / (1 + marginPercentage / 100);
         costPerHour = parseFloat(costPerHour);
         var marginAmount = ratePerHour - costPerHour;
@@ -79,4 +79,27 @@ function computeCostAndMargin(workExperience, ratePerHour, defaultMargin){
         retValue.data = {};
     }
     return retValue;
+}
+
+cts.createTask = (curRecord) => {
+    log.debug("Create task function")
+    try {
+        var ConsultantFullName = curRecord.getValue('name');
+        var task = record.create({ type: record.Type.TASK });
+        var subject = 'Follow up regarding onboarding of ' + ConsultantFullName;
+        task.setValue({
+            fieldId: 'title', value: subject
+        });
+        task.setValue({
+            fieldId: 'assigned', value: 4345
+        });
+        task.setValue({
+            fieldId: 'message', value: "Please verify!"
+        });
+        var taskId = task.save();
+
+    }
+    catch (e) {
+        log.error({ title: 'Error', details: e });
+    }
 }
