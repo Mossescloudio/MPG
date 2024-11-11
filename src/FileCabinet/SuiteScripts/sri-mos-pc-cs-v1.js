@@ -5,42 +5,57 @@
  */
 /*
 Name        : Client Script for Project Consultant Record
-Author      : Mosses
-Description : Compute Cost based on Work Experience
+Author      : Mosses Ross
+Description : Computes cost based on work experience and handles form actions
 Dependencies: None
-Release Date: 2024-10-01
-version     : 1.0.0
+Release Date: 2024-10-29
+version     : 1.0.1
 Changelog   : 1.0.0 - Initial release
+              1.0.1 - Merged cost calculation and action functions
 website     : www.cloudiotech.com
 */
-var record,pcMod;
-var modules = ['N/currentRecord','./sri-mos-pc-mod-v1'];
- 
+
+var record, pcMod;
+var modules = ['N/currentRecord', './sri-mos-pc-mod-v1'];
+
 define(modules, main);
- 
-function main(recordModule,pcModule) {
+
+function main(recordModule, pcModule) {
     record = recordModule;
     pcMod = pcModule;
     return {
-        // pageInit: pageInit,
         fieldChanged: myFieldChanged,
-        // postSourcing: postSourcing,
-        // sublistChanged: sublistChanged,
-        // lineInit: lineInit,
-        // validateField: validateField,
-        // validateLine: validateLine,
-        // validateInsert: validateInsert,
-        // validateDelete: validateDelete,
-        // saveRecord: saveRecord        
-    }
+        setAction: setCommand,
+        setView: setView
+    };
 }
+
 function myFieldChanged(context) {
     var currentRecord = context.currentRecord;
     var fieldId = context.fieldId;
+    
     if (fieldId == 'custrecord_mos_pc_experience') {
         var result = pcMod.updateCostAndMargin(currentRecord);
+        if (!result.success) {
+            console.error("Error updating cost and margin:", result.message);
+        }
     }
-    // if (fieldId == 'custrecord_cad_pc_cph') {
-    //     var result = pcMod.updateCostAndMargin(currentRecord);
-    // }
+}
+
+function setView(action) {
+    var curRecord = record.get();
+    curRecord.setValue({
+        fieldId: 'custpage_view',
+        value: action
+    });
+    document.forms[0].submit();
+}
+
+function setCommand(action) {
+    var curRecord = record.get();
+    curRecord.setValue({
+        fieldId: 'custpage_action',
+        value: action
+    });
+    document.forms[0].submit();
 }

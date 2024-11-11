@@ -104,7 +104,7 @@ function createUI(scriptContext, myParams) {
         } else if (userAction == 'CI') {
             fldInterest = form.addField({ id: "custpage_compound_interest", type: serverWidget.FieldType.CURRENCY, label: "Compound Interest", container: "fieldgroup_calc_Input_data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
         } else if (userAction == 'EMI') {
-            ctsUtils.GenerateSubtab(form, myParams);
+            // ctsUtils.GenerateSubtab(form, myParams);
 
             var fieldgroup = form.addFieldGroup({
                 id: "fieldgroup_primary_details",
@@ -147,7 +147,7 @@ function createUI(scriptContext, myParams) {
             functionName: 'setAction("EMI")'
         });
 
-        form.clientScriptModulePath = './sri-mos-finCalc-cs-v1.js'
+        form.clientScriptModulePath = './sri-mos-pc-cs-v1.js'
 
         retValue.success = true;
         retValue.message = 'UI Created';
