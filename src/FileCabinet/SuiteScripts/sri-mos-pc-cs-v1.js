@@ -33,7 +33,11 @@ function main(recordModule, pcModule) {
 function myFieldChanged(context) {
     var currentRecord = context.currentRecord;
     var fieldId = context.fieldId;
-    
+    var principle = currentRecord.getValue('custpage_principle');
+    if (isNaN(principle) || principle === 0) {
+        alert("Principle cannot be zero or a non-numeric value. Please enter a valid number.");
+        return false;
+    }
     if (fieldId == 'custrecord_mos_pc_experience') {
         var result = pcMod.updateCostAndMargin(currentRecord);
         if (!result.success) {

@@ -159,16 +159,15 @@ cts.createHTML = (scriptContext, myParams) => {
                 font-weight: 600;
                 background: #e3f4fb;
             }
-            .highlight{
-                background: light-green;
-                color: #111;
+            .null {
+                background: #D3D3D3;
             }
         </style>
     </head>
     <table style="width: 100%;border-collapse: collapse;margin-top:25px;position: relative;left: 50%">
         <thead style="background:#1c7e89">
             <tr style="color: white;">
-                <th class="table-header">No</th>
+                <th class="table-header">Year</th>
                 <th class="table-header">Principal</th>
                 <th class="table-header">Interest</th>
                 <th class="table-header">Installment</th>
@@ -188,7 +187,7 @@ cts.createHTML = (scriptContext, myParams) => {
         totalEMI += val.emi
         totalRepayed += val.capitalRepay
         innerHTML += `<tr>
-            <td class="table-values">${val.no}</td>
+            <td class="table-values">${val.year}</td>
             <td class="table-values">${val.principal.toFixed(2)}</td>
             <td class="table-values">${val.interest.toFixed(2)}</td>
             <td class="table-values">${val.emi.toFixed(2)}</td>
@@ -198,11 +197,11 @@ cts.createHTML = (scriptContext, myParams) => {
     }
     innerHTML += `
         <td class="table-values">Total</td>
-        <td class="table-values">Nill</td>
-        <td class="table-values highlight">${totalInterest.toFixed(2)}</td>
-        <td class="table-values highlight">${totalEMI.toFixed(2)}</td>       
-        <td class="table-values highlight">${totalRepayed.toFixed(2)}</td>  
-        <td class="table-values">Nill</td>          
+        <td class="table-values null">Null</td>
+        <td class="table-values">${totalInterest.toFixed(2)}</td>
+        <td class="table-values">${totalEMI.toFixed(2)}</td>       
+        <td class="table-values">${totalRepayed.toFixed(2)}</td>  
+        <td class="table-values null">Null</td>          
     </tbody>
         </table>
     </body>
@@ -235,7 +234,7 @@ function generateEMITable(principal, rate, period, emi) {
             }
 
             table.push({
-                no: year,
+                year: year,
                 principal: balance + yearlyRepay,
                 interest: yearlyInterest,
                 emi: emi * 12,
