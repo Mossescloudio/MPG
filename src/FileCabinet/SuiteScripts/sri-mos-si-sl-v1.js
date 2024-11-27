@@ -52,13 +52,19 @@ function routeGet(scriptContext) {
 }
 
 function routePost(scriptContext) {
-    let retValue = { success: false, message: "", data: {} }
+    return processEMI(scriptContext);
+}
+
+function processEMI(scriptContext) {
+    let retValue = { success: false, message: '', data: {} };
     try {
-        let myParams = { action: 'POST', data: {} }
-        return processEMI(scriptContext);
-    }
-    catch (e) {
-        log.error({ title: 'Error - Process Post', details: e });
+        const { principal, rate, time } = getUserInput(scriptContext);
+        const SimpleInterest = ctsUtils.calculateSimpleInterest(principal, rate, time).toFixed(2);
+        const CompoundInterest = ctsUtils.calculateCompoundInterest(principal, rate, time, 12);
+        const emi = ctsUtils.calculateEMI(principal, rate, time);
+        retValue = createUI(scriptContext, { action: 'POST', data: { principal, rate, time, SimpleInterest, CompoundInterest, emi } });
+    } catch (e) {
+        log.error({ title: 'Error - processEMI', details: e });
         retValue.success = false;
         retValue.message = e;
     }
@@ -68,41 +74,25 @@ function routePost(scriptContext) {
 function createUI(scriptContext, myParams) {
     var retValue = { success: false, message: '', data: {} };
     try {
-        var form = serverWidget.createForm({
-            title: 'Finance Calculator'
-        });
-        var fieldgroup = form.addFieldGroup({
-            id: "fieldgroup_Input_Data",
-            label: "Input Fields",
-        });
-        var fieldgroup = form.addFieldGroup({
-            id: "fieldgroup_Output_Data",
-            label: "Output Fields",
-        });
+        var form = serverWidget.createForm({ title: 'Finance Calculator' });
+        var fieldgroup = form.addFieldGroup({ id: "fieldgroup_Input_Data", label: "Input Fields" });
+        var fieldgroup = form.addFieldGroup({ id: "fieldgroup_Output_Data", label: "Output Fields" });
         let fldPrincipal = form.addField({
             id: 'custpage_principle', type: serverWidget.FieldType.CURRENCY, label: 'Principal', container: "fieldgroup_Input_Data"
         });
         let fldRate = form.addField({ id: 'custpage_rate', type: serverWidget.FieldType.PERCENT, label: "Rate of Interest", container: "fieldgroup_Input_Data" });
         let fldTime = form.addField({ id: "custpage_time", type: serverWidget.FieldType.INTEGER, label: "Time in Years", container: "fieldgroup_Input_Data" });
-        var fldSInterest = form.addField({ id: "custpage_simple_interest", type: serverWidget.FieldType.CURRENCY, label: "Simple Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
-        var fldCInterest = form.addField({ id: "custpage_compound_interest", type: serverWidget.FieldType.CURRENCY, label: "Compound Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
-        var fieldgroupEMI = form.addFieldGroup({
-            id: "fieldgroup_emi_table",
-            label: "EMI Table",
-        });
+        let fldSInterest = form.addField({ id: "custpage_simple_interest", type: serverWidget.FieldType.CURRENCY, label: "Simple Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
+        let fldCInterest = form.addField({ id: "custpage_compound_interest", type: serverWidget.FieldType.CURRENCY, label: "Compound Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
+        let fieldgroupEMI = form.addFieldGroup({ id: "fieldgroup_emi_table", label: "EMI Table" });
         let retHTML = ctsUtils.createHTML(scriptContext, myParams);
-        let htmlfld = form.addField({
-            id: "custpage_html_table",
-            type: serverWidget.FieldType.INLINEHTML,
-            label: "HTML",
-            container: "fieldgroup_emi_table"
-        }).defaultValue = retHTML;
+        let htmlfld = form.addField({ id: "custpage_html_table", type: serverWidget.FieldType.INLINEHTML, label: "HTML", container: "fieldgroup_emi_table" }).defaultValue = retHTML;
         if (myParams.action == 'POST' && myParams.data) {
             fldPrincipal.defaultValue = myParams.data.principal || 0;
             fldRate.defaultValue = myParams.data.rate || 0;
             fldTime.defaultValue = myParams.data.time || 0;
-            fldSInterest.defaultValue = myParams.data.simple_interest || 0;
-            fldCInterest.defaultValue = myParams.data.compound_interest || 0;
+            fldSInterest.defaultValue = myParams.data.SimpleInterest || 0;
+            fldCInterest.defaultValue = myParams.data.CompoundInterest || 0;
         }
         form.addSubmitButton({
             label: "Calculate"
@@ -113,7 +103,7 @@ function createUI(scriptContext, myParams) {
             success: true,
             message: 'UI Created',
             data: { form: form }
-        };        
+        };
     } catch (e) {
         log.error({ title: 'Error - CreateUI', details: e });
         retValue.success = false;
@@ -129,25 +119,4 @@ function getUserInput(scriptContext) {
         rate: parseFloat(custpage_rate || 0),
         time: parseInt(custpage_time || 0)
     };
-}
-
-function processEMI(scriptContext) {
-    let retValue = { success: false, message: '', data: {} };
-    try {
-        const { principal, rate, time } = getUserInput(scriptContext);
-        const SimpleInterest = ctsUtils.calculateSimpleInterest(principal, rate, time).toFixed(2);
-        const CompoundInterest = ctsUtils.calculateCompoundInterest(principal, rate, time, 12);
-        const emi = ctsUtils.calculateEMI(principal, rate, time);
-
-        retValue = createUI(scriptContext, {
-            action: 'POST', data: {
-                principal, rate, time, simple_interest: SimpleInterest, compound_interest: CompoundInterest, emi
-            }
-        });
-    } catch (e) {
-        log.error({ title: 'Error - processEMI', details: e });
-        retValue.success = false;
-        retValue.message = e;
-    }
-    return retValue;
 }
