@@ -3,104 +3,64 @@
  * @NScriptType Suitelet
  */
 /*
-Name        : Suitelet
+Name        : Finance Calculator Suitelet
 Author      : Mosses
-Description : Simple Interest, Compound Interest, and EMI
-Dependencies: None
-Release Date: 2024-10-01
-version     : 1.0.0
-Changelog   : 1.0.0 - Initial release
-website     : www.cloudiotech.com
+Description : Calculate Simple Interest, Compound Interest, and EMI
+Version     : 1.0.0
 */
-
-var query, record, runtime, serverWidget, ctsUtils;
-var modules = ['N/query', 'N/record', 'N/runtime', 'N/ui/serverWidget', './sri-mos-pc-mod-v1'];
+const DE = 'Unexpected Error Occured. Contact Support at support@cloudiotech.com' //Default Error Message
+var serverWidget, ctsUtils;
+var modules = ['N/ui/serverWidget', './sri-mos-pc-mod-v1'];
 
 define(modules, main);
 
-function main(queryModule, recordModule, runtimeModule, serverWidgetModule, ctsModule) {
-    query = queryModule;
-    record = recordModule;
-    runtime = runtimeModule;
+function main(serverWidgetModule, ctsModule) {
     serverWidget = serverWidgetModule;
     ctsUtils = ctsModule;
-    return {
-        onRequest: onRequest
-    }
+    return { onRequest: onRequest }
 }
 
-// For future, error handling purposes
-function handleError(error) { 
-    log.error({
-        title: "Error: " + error.name,
-        details: error.message,
-        stackTrace: error.stack
-    });
-    let errorMessage = "Error occurred. Please try again later.";
-    if (error.name === "ValidationError") {
-        errorMessage = "Invalid input. Please check the values you entered.";
-    } else if (error.name === "DatabaseError") {
-        errorMessage = "A database error occurred. Please contact support: Mosses@cloudiotech.com";
-    }
-    return errorMessage;
-}
+const ErrorPage = (message) => `
+    <html>
+    <body>
+        <h1>Error</h1>
+        <p>${message}</p>
+        <p>Contact technical support at support@cloudiotech.com for assistance.</p>
+    </body>
+    </html>`;
 
 function onRequest(scriptContext) {
     var retValue = { success: false, message: '', data: {} };
     try {
-        if (scriptContext.request.method == 'GET') {
-            log.debug({ title: "scriptContext", details: scriptContext });
-            retValue = routeGet(scriptContext);
-        }
-        if (scriptContext.request.method == 'POST') {
-            retValue = routePost(scriptContext);
-        }
+        const { method } = scriptContext.request;
+        retValue = method === 'GET' ? routeGet(scriptContext) : routePost(scriptContext);
         if (retValue.success) {
             log.debug({ title: 'On Success', details: retValue });
             scriptContext.response.writePage(retValue.data.form);
         } else {
-            retValue.message = retValue.message || "Error occurred. Try again later.";
-            let responseText = `<html>
-            <body>
-                <h1>Error</h1>
-                <p>${retValue.message}</p>
-                <p>Contact technical support at support@cloudiotech.com for assistance.</p>
-                <p>Or contact developer at Mosses@cloudiotech.com</p>
-            </body>
-            </html>`;
-            scriptContext.response.write(responseText);
+            retValue.message = retValue.message || DE;
+            scriptContext.response.write(ErrorPage(e.message || DE));
         }
     } catch (e) {
-        const errorMessage = handleError(e);
-        scriptContext.response.write(`
-            <html>
-            <body>
-                <h1>Error</h1>
-                <p>${errorMessage}</p>
-            </body>
-            </html>
-        `);
+        scriptContext.response.write(ErrorPage(e.message || DE));
     }
 }
 
 function routeGet(scriptContext) {
     let myParams = { action: 'GET', data: {} }
-    let retValue = createUI(scriptContext, myParams);
-    return retValue;
+    return createUI(scriptContext, myParams);
 }
 
 function routePost(scriptContext) {
     let retValue = { success: false, message: "", data: {} }
     try {
-        let myParams={action:'POST',data:{}}
-            retValue = processEMI(scriptContext);
-        return retValue;
+        let myParams = { action: 'POST', data: {} }
+        return processEMI(scriptContext);
     }
     catch (e) {
         log.error({ title: 'Error - Process Post', details: e });
         retValue.success = false;
         retValue.message = e;
-
     }
     return retValue;
 }
@@ -108,23 +68,26 @@ function routePost(scriptContext) {
 function createUI(scriptContext, myParams) {
     var retValue = { success: false, message: '', data: {} };
     try {
-        var userAction = scriptContext.request.parameters.custpage_action;
         var form = serverWidget.createForm({
             title: 'Finance Calculator'
         });
         var fieldgroup = form.addFieldGroup({
-            id: "fieldgroup_calc_Input_data",
-            label: "Input Field",
+            id: "fieldgroup_Input_Data",
+            label: "Input Fields",
+        });
+        var fieldgroup = form.addFieldGroup({
+            id: "fieldgroup_Output_Data",
+            label: "Output Fields",
         });
         let fldPrincipal = form.addField({
-            id: 'custpage_principle', type: serverWidget.FieldType.CURRENCY, label: 'Principal', container: "fieldgroup_calc_Input_data"
+            id: 'custpage_principle', type: serverWidget.FieldType.CURRENCY, label: 'Principal', container: "fieldgroup_Input_Data"
         });
-        let fldRate = form.addField({ id: 'custpage_rate', type: serverWidget.FieldType.PERCENT, label: "Rate of Interest", container: "fieldgroup_calc_Input_data" });
-        let fldTime = form.addField({ id: "custpage_time", type: serverWidget.FieldType.INTEGER, label: "Time in Years", container: "fieldgroup_calc_Input_data" });
-        var fldSInterest = form.addField({ id: "custpage_simple_interest", type: serverWidget.FieldType.CURRENCY, label: "Simple Interest", container: "fieldgroup_calc_Input_data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
-        var fldCInterest = form.addField({ id: "custpage_compound_interest", type: serverWidget.FieldType.CURRENCY, label: "Compound Interest", container: "fieldgroup_calc_Input_data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
-        var fieldgroup = form.addFieldGroup({
-            id: "fieldgroup_primary_details",
+        let fldRate = form.addField({ id: 'custpage_rate', type: serverWidget.FieldType.PERCENT, label: "Rate of Interest", container: "fieldgroup_Input_Data" });
+        let fldTime = form.addField({ id: "custpage_time", type: serverWidget.FieldType.INTEGER, label: "Time in Years", container: "fieldgroup_Input_Data" });
+        var fldSInterest = form.addField({ id: "custpage_simple_interest", type: serverWidget.FieldType.CURRENCY, label: "Simple Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
+        var fldCInterest = form.addField({ id: "custpage_compound_interest", type: serverWidget.FieldType.CURRENCY, label: "Compound Interest", container: "fieldgroup_Output_Data" }).updateDisplayType({ displayType: serverWidget.FieldDisplayType.DISABLED });
+        var fieldgroupEMI = form.addFieldGroup({
+            id: "fieldgroup_emi_table",
             label: "EMI Table",
         });
         let retHTML = ctsUtils.createHTML(scriptContext, myParams);
@@ -132,7 +95,7 @@ function createUI(scriptContext, myParams) {
             id: "custpage_html_table",
             type: serverWidget.FieldType.INLINEHTML,
             label: "HTML",
-            container: "fieldgroup_primary_details"
+            container: "fieldgroup_emi_table"
         }).defaultValue = retHTML;
         if (myParams.action == 'POST' && myParams.data) {
             fldPrincipal.defaultValue = myParams.data.principal || 0;
@@ -146,11 +109,13 @@ function createUI(scriptContext, myParams) {
         });
         form.clientScriptModulePath = './sri-mos-pc-cs-v1.js'
 
-        retValue.success = true;
-        retValue.message = 'UI Created';
-        retValue.data = { form: form };
+        retValue = {
+            success: true,
+            message: 'UI Created',
+            data: { form: form }
+        };        
     } catch (e) {
-        log.error({ title: 'Error: CreateUI', details: e });
+        log.error({ title: 'Error - CreateUI', details: e });
         retValue.success = false;
         retValue.message = e;
     }
@@ -158,11 +123,11 @@ function createUI(scriptContext, myParams) {
 }
 
 function getUserInput(scriptContext) {
-    const params = scriptContext.request.parameters;
+    const { custpage_principle, custpage_rate, custpage_time } = scriptContext.request.parameters;
     return {
-        principal: parseFloat(params.custpage_principle || 0),
-        rate: parseFloat(params.custpage_rate || 0),
-        time: parseInt(params.custpage_time || 0)
+        principal: parseFloat(custpage_principle || 0),
+        rate: parseFloat(custpage_rate || 0),
+        time: parseInt(custpage_time || 0)
     };
 }
 
@@ -170,15 +135,17 @@ function processEMI(scriptContext) {
     let retValue = { success: false, message: '', data: {} };
     try {
         const { principal, rate, time } = getUserInput(scriptContext);
-
         const SimpleInterest = ctsUtils.calculateSimpleInterest(principal, rate, time).toFixed(2);
         const CompoundInterest = ctsUtils.calculateCompoundInterest(principal, rate, time, 12);
         const emi = ctsUtils.calculateEMI(principal, rate, time);
 
-        retValue = createUI(scriptContext, { action: 'POST', data: {
-            principal, rate, time, simple_interest: SimpleInterest, compound_interest: CompoundInterest, emi } });
+        retValue = createUI(scriptContext, {
+            action: 'POST', data: {
+                principal, rate, time, simple_interest: SimpleInterest, compound_interest: CompoundInterest, emi
+            }
+        });
     } catch (e) {
-        log.error({ title: 'Error: processEMI', details: e });
+        log.error({ title: 'Error - processEMI', details: e });
         retValue.success = false;
         retValue.message = e;
     }
