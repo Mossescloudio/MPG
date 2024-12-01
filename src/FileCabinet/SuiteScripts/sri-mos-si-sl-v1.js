@@ -17,16 +17,15 @@ const ErrorPage = (message) => `
     </body>
     </html>`;
 const DE = 'Unexpected Error Occured. Contact Support at support@cloudiotech.com'
-var serverWidget, ctsUtils, render;
+var serverWidget, ctsUtils;
 
-var modules = ['N/ui/serverWidget', './sri-mos-pc-mod-v1', 'N/render'];
+var modules = ['N/ui/serverWidget', './sri-mos-pc-mod-v1'];
 
 define(modules, main);
 
-function main(serverWidgetModule, ctsModule, renderModule) {
+function main(serverWidgetModule, ctsModule) {
     serverWidget = serverWidgetModule;
     ctsUtils = ctsModule;
-    render = renderModule;
     return { onRequest: onRequest }
 }
 
@@ -106,7 +105,7 @@ function createUI(scriptContext, myParams) {
             form.addButton({
                 id: 'custpage_download_pdf',
                 label: 'Export - PDF',
-                functionName: 'downloadHTML'
+                functionName: 'triggerPDF'
             });
             let retHTML = ctsUtils.createHTML(scriptContext, myParams);
             let htmlfld = form.addField({ id: "custpage_html_table", type: serverWidget.FieldType.INLINEHTML, label: "HTML", container: "fieldgroup_emi_table" }).defaultValue = retHTML;

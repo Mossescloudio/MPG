@@ -26,7 +26,8 @@ function main(recordModule, pcModule) {
     return {
         fieldChanged: myFieldChanged,
         setAction: setCommand,
-        setView: setView
+        setView: setView,
+        triggerPDF: triggerPDF
     };
 }
 
@@ -62,4 +63,9 @@ function setCommand(action) {
         value: action
     });
     document.forms[0].submit();
+}
+function triggerPDF() {
+    log.debug({title: 'triggerPDF', details: 'trigger pdf is triggered'});
+    var suiteletUrl = '/app/site/hosting/scriptlet.nl?script=2067&deploy=1&customText=TriggeredPDFMosses';                
+    window.location.href = suiteletUrl;
 }
