@@ -64,7 +64,6 @@ function computeCostAndMargin(workExperience, ratePerHour, defaultMargin) {
         }
 
         log.debug({ title: 'Margin Percentage', details: marginPercentage });
-
         var costPerHour = ratePerHour / (1 + marginPercentage / 100);
         costPerHour = parseFloat(costPerHour);
         var marginAmount = ratePerHour - costPerHour;
@@ -115,15 +114,15 @@ cts.createTask = (curRecord) => {
     return retValue;
 }
 
-cts.calculateSimpleInterest = (principal, rate, time) => {
+cts.calculateSimpleInterest = (principle, rate, time) => {
     rate = rate * 0.1;
-    return (principal * rate * time) / 100;
+    return (principle * rate * time) / 100;
 }
 
-cts.calculateCompoundInterest = (principal, rate, time, n) => {
+cts.calculateCompoundInterest = (principle, rate, time, n) => {
     rate = rate / 100;
-    let amount = principal * Math.pow((1 + rate / n), n * time);
-    let Interest = amount - principal;
+    let amount = principle * Math.pow((1 + rate / n), n * time);
+    let Interest = amount - principle;
     return Interest.toFixed(2);
 }
 
@@ -137,7 +136,6 @@ cts.calculateEMI = (P, annualInterestRate, loanTenureYears) => {
 cts.createHTML = (scriptContext, myParams) => {
     var innerHTML = ""
     innerHTML = `<html>
-    <body>
     <head>
         <style type="text/css">
             .table-header{
@@ -146,9 +144,8 @@ cts.createHTML = (scriptContext, myParams) => {
                 border-color: #111;
                 padding: 10px;
                 text-align:center;
-                font-weight:900;
-                font-size: 12px;
-                text-transform: uppercase;
+                font-weight: 900;
+                font-size: 14px;
             }
             .table-values{
                 border-width: 3px;
@@ -159,25 +156,21 @@ cts.createHTML = (scriptContext, myParams) => {
                 font-weight: 600;
                 background: #e3f4fb;
             }
-            .null {
-                background: #D3D3D3;
-            }
         </style>
     </head>
-    <table style="width: 100%;border-collapse: collapse;margin-top:25px;position: relative;left: 50%">
+    <table style = "width: 100%; border-collapse: collapse; margin-top: 25px; position: relative;left: 50%">
         <thead style="background:#1c7e89">
             <tr style="color: white;">
                 <th class="table-header">Year</th>
-                <th class="table-header">Principal</th>
+                <th class="table-header">Principle</th>
                 <th class="table-header">Interest</th>
                 <th class="table-header">Installment</th>
                 <th class="table-header">Capital Repay</th>
                 <th class="table-header">Balance</th>
             </tr>
-        </thead>
-        <tbody>`;
+        </thead>`;
 
-    let reEMIVal = generateEMITable(myParams.data.principal, myParams.data.rate, myParams.data.time, myParams.data.emi);
+    let reEMIVal = generateEMITable(myParams.data.principle, myParams.data.rate, myParams.data.time, myParams.data.emi);
     let EMIValues = reEMIVal.data.table;
     var totalInterest = 0;
     var totalEMI = 0;
@@ -188,7 +181,7 @@ cts.createHTML = (scriptContext, myParams) => {
         totalRepayed += val.capitalRepay
         innerHTML += `<tr>
             <td class="table-values">${val.year}</td>
-            <td class="table-values">${val.principal.toFixed(2)}</td>
+            <td class="table-values">${val.principle.toFixed(2)}</td>
             <td class="table-values">${val.interest.toFixed(2)}</td>
             <td class="table-values">${val.emi.toFixed(2)}</td>
             <td class="table-values">${val.capitalRepay.toFixed(2)}</td>
@@ -203,54 +196,45 @@ cts.createHTML = (scriptContext, myParams) => {
         <td class="table-values">${totalRepayed.toFixed(2)}</td>  
         <td class="table-values null">Null</td>          
     </tbody>
-        </table>
-    </body>
+    </table>
     </html>`;
-
     return innerHTML;
 }
 
-function generateEMITable(principal, rate, period, emi) {
+function generateEMITable(principle, rate, period, emi) {
     var retValue = { success: false, message: '', data: {} };
     try {
-        var balance = principal;
+        var balance = principle;
         var monthlyRate = rate / 12 / 100;
         var table = [];
-
-
         for (var year = 1; year <= period; year++) {
             var yearlyInterest = 0;
             var yearlyRepay = 0;
-
             for (var month = 1; month <= 12; month++) {
                 if (balance <= 0) break;
 
                 var interestPart = balance * monthlyRate;
                 var capitalRepay = emi - interestPart;
                 balance -= capitalRepay;
-
                 yearlyInterest += interestPart;
                 yearlyRepay += capitalRepay;
             }
-
             table.push({
                 year: year,
-                principal: balance + yearlyRepay,
+                principle: balance + yearlyRepay,
                 interest: yearlyInterest,
                 emi: emi * 12,
                 capitalRepay: yearlyRepay,
                 balance: (balance < 0 ? 0 : balance).toFixed(2),
             });
-
             if (balance <= 0) break;
         }
-
         retValue.success = true;
         retValue.message = 'EMI Table Array created!';
         retValue.data = { table: table };
     }
     catch (e) {
-        log.error({ title: 'Error: GenerateEMITable Array', details: e });
+        log.error({ title: 'Error - GenerateEMITable Array', details: e });
         retValue.success = false;
         retValue.message = e.message;
         retValue.data = {};
