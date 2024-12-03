@@ -25,8 +25,6 @@ function main(recordModule, pcModule) {
     pcMod = pcModule;
     return {
         fieldChanged: myFieldChanged,
-        setAction: setCommand,
-        setView: setView,
         triggerPDF: triggerPDF
     };
 }
@@ -47,23 +45,6 @@ function myFieldChanged(context) {
     }
 }
 
-function setView(action) {
-    var curRecord = record.get();
-    curRecord.setValue({
-        fieldId: 'custpage_view',
-        value: action
-    });
-    document.forms[0].submit();
-}
-
-function setCommand(action) {
-    var curRecord = record.get();
-    curRecord.setValue({
-        fieldId: 'custpage_action',
-        value: action
-    });
-    document.forms[0].submit();
-}
 function triggerPDF() {
     log.debug({title: 'triggerPDF', details: 'trigger pdf is triggered'});
     var suiteletUrl = '/app/site/hosting/scriptlet.nl?script=2067&deploy=1&customText=TriggeredPDFMosses';                

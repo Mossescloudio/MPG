@@ -17,26 +17,25 @@ const ErrorPage = (message) => `
     </body>
     </html>`;
 const DE = 'Unexpected Error Occured. Contact Support at support@cloudiotech.com'
-var serverWidget, ctsUtils;
+var serverWidget, ctsUtils, render;
 
-var modules = ['N/ui/serverWidget', './sri-mos-pc-mod-v1'];
+var modules = ['N/ui/serverWidget', './sri-mos-pc-mod-v1', 'N/render'];
 
 define(modules, main);
 
-function main(serverWidgetModule, ctsModule) {
+function main(serverWidgetModule, ctsModule, renderMod) {
     serverWidget = serverWidgetModule;
     ctsUtils = ctsModule;
+    render = renderMod;
     return { onRequest: onRequest }
 }
 
 function onRequest(scriptContext) {
     const { method } = scriptContext.request;
-    
     var retValue = { success: false, message: '', data: {} };
     try {
         if (method == 'GET') { retValue = routeGet(scriptContext) }
         else if (method == 'POST') { retValue = routePost(scriptContext) }
-
         if (retValue.success) {
             log.debug({ title: 'On Success', details: retValue });
             scriptContext.response.writePage(retValue.data.form);

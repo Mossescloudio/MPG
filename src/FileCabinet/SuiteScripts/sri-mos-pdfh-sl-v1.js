@@ -28,29 +28,70 @@ function onRequest(scriptContext) {
         var renderer = render.create();
         var pdfTemplate = `
             <pdf>
-                <head>
-                    <style type="text/css">
-                        body {
-                            font-family: arial;
-                            font-size: 12px;
-                        }
-                        h1 {
-                            font-size: 18px;
-                            color: #333;
-                        }
-                        p {
-                            margin: 5px 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Custom PDF Document</h1>
-                    <p>Hello Balu, Team this is a dynamically generated PDF! TEst yeah Mosses Ross</p>
-                    <p>Custom Text: ${scriptContext.request.parameters.customText || 'Default Text'}</p>
-                </body>
-            </pdf>
-        `;
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Finance Calculator Table</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    th, td {
+                        text-align: center;
+                        padding: 10px;
+                        border: 1px solid #ccc;
+                    }
+                    th {
+                        background-color: #007b5e;
+                        color: white;
+                        font-weight: bold;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+                    .total-row {
+                        font-weight: bold;
+                        background-color: #007b5e;
+                        color: white;
+                    }
+                </style>
+            </head>
+            <body>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Principle</th>
+                            <th>Interest</th>
+                            <th>Installment</th>
+                            <th>Capital Repay</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>150000.00</td>
+                            <td>16327.82</td>
+                            <td>47400.90</td>
+                            <td>31073.09</td>
+                            <td>118926.91</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        </pdf>
 
+        `;
+        log.debug({title: 'HTML', details: pdfTemplate});
         renderer.templateContent = pdfTemplate;
         var pdfFile = renderer.renderAsPdf();
         scriptContext.response.writeFile({

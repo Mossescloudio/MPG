@@ -159,7 +159,7 @@ cts.createHTML = (scriptContext, myParams) => {
         </style>
     </head>
     <table style = "width: 100%; border-collapse: collapse; margin-top: 25px; position: relative;left: 50%">
-        <thead style="background:#1c7e89">
+    <thead style="background:#1c7e89", text-transform: uppercase>
             <tr style="color: white;">
                 <th class="table-header">Year</th>
                 <th class="table-header">Principle</th>
@@ -212,7 +212,6 @@ function generateEMITable(principle, rate, period, emi) {
             var yearlyRepay = 0;
             for (var month = 1; month <= 12; month++) {
                 if (balance <= 0) break;
-
                 var interestPart = balance * monthlyRate;
                 var capitalRepay = emi - interestPart;
                 balance -= capitalRepay;
